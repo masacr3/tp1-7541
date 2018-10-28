@@ -7,28 +7,29 @@
 #include "pila.h"
 
 //operaciones
-bool sumar(pila_t *); //ok
-bool restar(pila_t *) //ok
-bool multiplicar(pila_t *); //ok
-bool log_c(pila_t *); //ok
+bool sumar(pila_t *); 
+bool restar(pila_t *);
+bool multiplicar(pila_t *);
+bool dividir(pila_t *);
+bool ternario (pila_t *);
+bool raiz(pila_t *);
+bool log_c(pila_t *);
 bool pot(pila_t *);
-bool dividir(pila_t *);//ok
-bool raiz(pila_t *); //ok
-bool ternario (pila_t *); //ok
 
 //wrapper
-int _raiz(int,int,int); //ok
-int _log_c(int,int); //ok
+int _raiz(int,int,int);
+int _log_c(int,int);
+int _pot(int,int);
 
 //ejecuta operaciones
-void calcular(pila_t *pila, char *op, bool *ok); //ok
+void calcular(pila_t *pila, char *op, bool *ok);
 
 //wrapper destruir pila
-void _free_pila(pila_t *pila); //ok
+void _free_pila(pila_t *pila);
 
 
 //main
-void calculadora_polaca_inversa(char*); //ok
+void calculadora_polaca_inversa(char*);
 
 void calculadora_polaca_inversa(char *comandos){
 	
@@ -68,6 +69,30 @@ void calculadora_polaca_inversa(char *comandos){
 	_free_pila(pila);
 }
 
+bool sumar(pila_t *pila){
+	if (pila_esta_vacia(pila)) return false;
+
+	int *v = pila_desapilar(pila);
+
+	if (pila_esta_vacia(pila)){
+		free(v);
+		return false;
+	}
+	int *v2 = (int*)pila_desapilar(pila);
+
+	int *suma = malloc(sizeof(int));
+
+	*suma = *v + *v2;
+
+	pila_apilar(pila, suma);
+
+	free(v);
+	free(v2);
+
+	return true;
+}
+
+
 bool restar(pila_t *pila){
 	if ( pila_esta_vacia(pila)) return false;
 
@@ -92,28 +117,31 @@ bool restar(pila_t *pila){
 	return true;
 }
 
-bool sumar(pila_t *pila){
-	if (pila_esta_vacia(pila)) return false;
+bool multiplicar(pila_t *pila){
+
+	if ( pila_esta_vacia(pila) ) return false;
 
 	int *v = pila_desapilar(pila);
 
-	if (pila_esta_vacia(pila)){
+	if ( pila_esta_vacia(pila) ){
 		free(v);
 		return false;
 	}
-	int *v2 = (int*)pila_desapilar(pila);
 
-	int *suma = malloc(sizeof(int));
+	int *v2 = pila_desapilar(pila);
 
-	*suma = *v + *v2;
+	int *multiplicacion = malloc(sizeof(int));
 
-	pila_apilar(pila, suma);
+	*multiplicacion = *v * *v2;
+
+	pila_apilar(pila, multiplicacion);
 
 	free(v);
 	free(v2);
 
 	return true;
 }
+
 
 bool dividir(pila_t *pila){
 	if ( pila_esta_vacia(pila)) return false;
@@ -176,28 +204,6 @@ bool ternario(pila_t *pila){
 
 }
 
-void calcular(pila_t *pila, char *op, bool *ok){
-	
-	//la funcion suma contempla la resta
-	if ( strcmp(op,"+") == 0) *ok = sumar(pila);
-
-	else if ( strcmp(op,"-") == 0) *ok = restar(pila);
-
-	else if ( strcmp(op,"*") == 0) *ok = multiplicar(pila);
-
-	else if ( strcmp(op,"^") == 0) *ok = pot(pila);
-
-	else if ( strcmp(op,"log") == 0) *ok = log_c(pila);
-
-	else if ( strcmp(op,"/") == 0 ) *ok = dividir(pila);
-	
-	else if ( strcmp(op,"?") == 0 ) *ok = ternario(pila);
-
-	else if ( strcmp(op,"sqrt") == 0) *ok = raiz(pila);
-
-	else *ok = false;
-}
-
 bool raiz(pila_t *pila){
 
 	if (pila_esta_vacia(pila)) return false;
@@ -231,13 +237,6 @@ int _raiz(int numero, int i , int f){
 	if ( ( medio * medio ) > numero ) return _raiz(numero, i, medio - 1 );
 
 	return _raiz(numero, medio + 1, f );
-}
-
-void _free_pila(pila_t *pila){
-	while( !pila_esta_vacia(pila)){
-		free(pila_desapilar(pila));
-	}
-	pila_destruir(pila);
 }
 
 bool log_c(pila_t *pila){
@@ -285,34 +284,78 @@ int _log_c(int base, int argumento){
 
 bool pot(pila_t *pila){
 	if ( pila_esta_vacia(pila)) return false;
+	
+	int *base = pila_desapilar(pila);
 
-	return false;
-}
-
-bool multiplicar(pila_t *pila){
-
-	if ( pila_esta_vacia(pila) ) return false;
-
-	int *v = pila_desapilar(pila);
-
-	if ( pila_esta_vacia(pila) ){
-		free(v);
+	if ( pila_esta_vacia(pila) ) {
+		free(base);
 		return false;
 	}
 
-	int *v2 = pila_desapilar(pila);
+	int *exp = pila_desapilar(pila);
 
-	int *multiplicacion = malloc(sizeof(int));
+	if (*exp < 0 ) {
+		free(base);
+		free(exp);
+		return false;
+	}
 
-	*multiplicacion = *v * *v2;
+	int *potencia = malloc(sizeof(int));
 
-	pila_apilar(pila, multiplicacion);
+	*potencia = _pot(*base,*exp);
 
-	free(v);
-	free(v2);
+	pila_apilar(pila, potencia);
+
+	free(base);
+	free(exp);
 
 	return true;
 }
+
+
+//catedra function.. O(log n)
+int _pot(int base, int exp){
+	if ( exp < 1 ) return 1;
+
+	if ( exp % 2 == 0 ) {
+		int a = _pot(base, exp/2);
+		return a * a;
+	}
+	else {
+		int a = _pot(base, (exp - 1)/2);
+		return base * a * a;
+	}
+}
+
+
+void calcular(pila_t *pila, char *op, bool *ok){
+	
+	if ( strcmp(op,"+") == 0) *ok = sumar(pila);
+
+	else if ( strcmp(op,"-") == 0) *ok = restar(pila);
+
+	else if ( strcmp(op,"*") == 0) *ok = multiplicar(pila);
+
+	else if ( strcmp(op,"^") == 0) *ok = pot(pila);
+
+	else if ( strcmp(op,"log") == 0) *ok = log_c(pila);
+
+	else if ( strcmp(op,"/") == 0 ) *ok = dividir(pila);
+	
+	else if ( strcmp(op,"?") == 0 ) *ok = ternario(pila);
+
+	else if ( strcmp(op,"sqrt") == 0) *ok = raiz(pila);
+
+	else *ok = false;
+}
+
+void _free_pila(pila_t *pila){
+	while( !pila_esta_vacia(pila)){
+		free(pila_desapilar(pila));
+	}
+	pila_destruir(pila);
+}
+
 
 int main(){
 	size_t cap = 0;
